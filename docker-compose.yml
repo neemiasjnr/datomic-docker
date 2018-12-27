@@ -1,0 +1,37 @@
+version: "2"
+services:
+  datomicdb:
+    image: datomic
+    build: .
+    entrypoint: "./bin/transactor"
+    command: "./config/dev-transactor.properties"
+    ports:
+      - "4336:4336"
+      - "4335:4335"
+      - "4334:4334"
+    volumes:
+      - "./data:/data"
+    networks:
+      datomic-net:
+        ipv4_address: 10.11.0.2
+
+  console:
+    image: datomic-console
+    entrypoint: "bin/console -p 9000"
+    command: "dev datomic:dev://10.11.0.2:4334/"
+    build: .
+    ports:
+      - "9000:9000"
+    links:
+      - datomicdb
+    networks:
+      datomic-net:
+        ipv4_address: 10.11.0.3
+
+networks:
+  datomic-net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.11.0.0/24
+         gateway: 10.11.0.1
